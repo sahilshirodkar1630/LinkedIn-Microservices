@@ -1,4 +1,4 @@
-package com.sahil.linkedInProject.userService.exception;
+package com.sahil.linkedInProject.ConnectionsService.exception;
 
 public class BadRequestException extends RuntimeException{
     public BadRequestException(String message) {
