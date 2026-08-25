@@ -1,13 +1,17 @@
 package com.sahil.linkedInProject.postsService.service;
 
+import com.sahil.linkedInProject.postsService.client.ConnectionsServiceClient;
+import com.sahil.linkedInProject.postsService.dto.PersonDto;
 import com.sahil.linkedInProject.postsService.dto.PostCreateRequestDto;
 import com.sahil.linkedInProject.postsService.dto.PostDto;
 import com.sahil.linkedInProject.postsService.entity.Post;
+import com.sahil.linkedInProject.postsService.event.PostCreated;
 import com.sahil.linkedInProject.postsService.exception.ResourceNotFoundException;
 import com.sahil.linkedInProject.postsService.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,12 +24,28 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final ModelMapper modelMapper;
+    private final ConnectionsServiceClient connectionsServiceClient;
+    private final KafkaTemplate<Long, PostCreated> postCreatedKafkaTemplate;
 
     public PostDto createPost(PostCreateRequestDto postCreateRequestDto, Long userId) {
         log.info("Creating post for user with id: {}", userId);
         Post post = modelMapper.map(postCreateRequestDto, Post.class);
         post.setUserId(userId);
         post = postRepository.save(post);
+
+        List<PersonDto> personDtoList = connectionsServiceClient.getFirstDegreeConnections(userId);
+
+        for(PersonDto person : personDtoList){ // send notification to on each connection
+            PostCreated postCreated = PostCreated
+                    .builder()
+                    .postId(post.getId())
+                    .content(post.getContent())
+                    .ownerUserId(person.getUserId())
+                    .userId(post.getUserId())
+                    .build();
+            postCreatedKafkaTemplate.send("post_created_topic",postCreated);
+        }
+
         return modelMapper.map(post, PostDto.class);
     }
 
