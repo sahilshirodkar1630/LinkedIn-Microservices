@@ -1,5 +1,8 @@
-package com.sahil.linkedInProject.userService.exception;
+package com.sahil.linkedInProject.NotificationService.exception;
 
+import com.sahil.linkedInProject.userService.exception.ApiError;
+import com.sahil.linkedInProject.userService.exception.BadRequestException;
+import com.sahil.linkedInProject.userService.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

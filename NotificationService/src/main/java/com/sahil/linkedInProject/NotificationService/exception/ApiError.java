@@ -1,4 +1,4 @@
-package com.sahil.linkedInProject.userService.exception;
+package com.sahil.linkedInProject.NotificationService.exception;
 
 import lombok.Data;
 import org.springframework.http.HttpStatus;
